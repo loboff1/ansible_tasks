@@ -1,8 +1,0 @@
----
-# handlers file for role_service-status
-
-- name: Check service status
-  systemd:
-    name: nginx
-    
-    
