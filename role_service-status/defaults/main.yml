@@ -1,0 +1,10 @@
+---
+# vars file for this role
+
+file_name: "test"
+service_name: "nginx"
+owner_name: "andrey"
+group_name: "andrey"
+
+
+

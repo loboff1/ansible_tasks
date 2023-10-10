@@ -1,0 +1,13 @@
+---
+ - name: CHECK SERVICE STATUS AND ZIPPING LOGS
+   hosts: all
+   become: true
+   gather_facts: yes
+   
+   roles:
+    - role: role_service-status
+      tags: role_service-status
+     
+    - role: role_zip-logs
+      tags: role_zip-logs
+

@@ -1,0 +1,63 @@
+---
+# tasks file for check service status
+  
+- name: Check service status
+  systemd:
+    name: "{{ service_name }}"
+  register: nginx_status
+   
+- name: Create Log File
+  file:
+    path: "/var/log/{{ file_name }}.log"
+    state: touch
+    owner: "{{ owner_name }}"
+    group: "{{ group_name }}"
+    mode: 0644  
+             
+- name: add line to log file when active
+  lineinfile:
+    path: /var/log/{{ file_name }}.log
+    line: '{{ ansible_date_time.time }}: OK'
+  when: nginx_status.status.ActiveState == "active"
+     
+- name: add line to log file when inactive
+  lineinfile:
+    path: /var/log/{{ file_name }}.log
+    line: '{{ ansible_date_time.time }}: Сервис недоступен'
+  when: nginx_status.status.ActiveState == "inactive"
+  
+- name: start service nginx
+  systemd:
+    name: "{{ service_name }}"
+    state: started
+          
+- name: Check service status
+  systemd:
+    name: "{{ service_name }}"
+  register: nginx_status  
+    
+- name: add line to log file when active
+  lineinfile:
+    path: /var/log/{{ file_name }}.log
+    line: '{{ ansible_date_time.time }}: Сервис успешно запущен'
+  when: nginx_status.status.ActiveState == "active"
+
+- name: Sending an e-mail and add new line to log when service inactive
+  block: 
+  - name: Sending an e-mail using Gmail SMTP servers when inactive
+    community.general.mail:
+      host: smtp.gmail.com
+      port: 587
+      username: email_from@gmail.com
+      password: password
+      to: Andrey <email_to@ya.ru>
+      subject: Ansible-report
+      body: '{{ ansible_date_time.time }}: {{ nginx_status.name }}: {{ nginx_status.status.ActiveState }}'
+    delegate_to: localhost
+   
+  - name: add line to log file when inactive
+    lineinfile:
+      path: /var/log/{{ file_name }}.log
+      line: '{{ ansible_date_time.time }}: failed'
+  when: nginx_status.status.ActiveState == "inactive"             
+

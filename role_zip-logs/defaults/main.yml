@@ -1,0 +1,6 @@
+---
+# vars file for role_zip-logs
+
+dir_archive: "archive"
+
+

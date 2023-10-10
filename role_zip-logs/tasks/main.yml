@@ -1,0 +1,27 @@
+---
+# tasks file for zipping logs
+
+- name: find logs from 01.01.2022 to 30.06.2022 via regex
+  find:
+    paths:
+      - /opt/log/service_log/accounting
+      - /opt/log/service_log/authoriz
+      - /opt/log/service_log/authentic
+    file_type: file  
+    patterns: "([a-zA-Z]+)_[0-9]{4}(0[1-6])(0[1-9]|1[0-9]|2[0-9]|3[01]).log"
+    use_regex: yes
+  register: logs_to_archive
+
+- name: Make archive dir
+  file:
+    path: /opt/log/{{ dir_archive }}
+    state: directory
+    mode: '0755'
+
+- name: Zipping logs and remove files
+  archive:
+    path: "{{ logs_to_archive.files | map(attribute='path') | list }}"
+    dest: /opt/log/archive/logs_{{ inventory_hostname }}.tar.gz
+    format: gz
+    remove: true
+
